@@ -18,6 +18,9 @@
 #include <ctime>
 #include <chrono>
 #include "render/box.h"
+#include "kdtree3D.h"
+
+
 
 template<typename PointT>
 class ProcessPointClouds {
@@ -30,13 +33,17 @@ public:
 
     void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
 
-    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
+    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint, Eigen::Vector4f RoofminPoint, Eigen::Vector4f RoofmaxPoint);
 
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud);
 
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
 
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlane_RANSC(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
+
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
+
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering_euclidean(typename pcl::PointCloud<PointT>::Ptr & cloud, float clusterTolerance, int minSize, int maxSize);
 
     Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
 
@@ -45,6 +52,12 @@ public:
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
+
+    void clusterHelper(int i, const typename pcl::PointCloud<PointT>::Ptr & cloud, std::vector<int>& cluster, std::vector<bool>& processed, KdTree* tree, float distanceTol);
+
+    std::vector<std::vector<int>> euclideanCluster(typename pcl::PointCloud<PointT>::Ptr & cloud, KdTree* tree, float distanceTol, int minSize, int maxSize);
+
   
 };
+
 #endif /* PROCESSPOINTCLOUDS_H_ */
